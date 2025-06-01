@@ -198,7 +198,7 @@ void MainWindow::languagechanged()
         if (last)
         {
             capture->StopCaptureAsync();
-            recognizer->StopContinuousRecognitionAsync().wait();
+            // recognizer->StopContinuousRecognitionAsync().wait();
         }
         std::cout << curridx << "\t" << modelnames[curridx] << std::endl;
         speechconfig->SetSpeechRecognitionModel(modelnames[curridx], MS_SR_KEY);
@@ -261,16 +261,21 @@ MainWindow::MainWindow()
     mainlayout->addcontrol(combolangs, 1, 0, 1, 2);
     button1->onclick = [&]()
     {
-        if (isrunning)
-        {
-            capture->StopCaptureAsync();
-            recognizer->StopContinuousRecognitionAsync().wait();
-        }
-        else
-        {
-            recognizer->StartContinuousRecognitionAsync().wait();
-            capture->StartCaptureAsync(GetCurrentProcessId(), false);
-        }
+        std::thread(
+            [&]()
+            {
+                if (isrunning)
+                {
+                    capture->StopCaptureAsync();
+                    recognizer->StopContinuousRecognitionAsync().wait();
+                }
+                else
+                {
+                    recognizer->StartContinuousRecognitionAsync().wait();
+                    capture->StartCaptureAsync(GetCurrentProcessId(), false);
+                }
+            })
+            .detach();
     };
 
     recognizing = new multilineedit{this};
