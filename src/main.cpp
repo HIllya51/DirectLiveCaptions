@@ -82,6 +82,7 @@ class MainWindow : public mainwindow
     checkbox *copytoclip;
     checkbox *copytoclipwhenpunch;
     std::wstring laststr;
+    bool isend = false;
 
 public:
     void on_show() override;
@@ -90,6 +91,7 @@ public:
 };
 void MainWindow::on_close()
 {
+    isend = true;
     if (isrunning)
     {
         capture->StopCaptureAsync();
@@ -129,7 +131,8 @@ void MainWindow::create_recognizer()
     recognizer->SessionStarted.Connect(
         [&](const SessionEventArgs &e)
         {
-            button1->settext(L"暂停");
+            if (!isend)
+                button1->settext(L"暂停");
             isrunning = true;
         });
 
@@ -137,7 +140,8 @@ void MainWindow::create_recognizer()
         [&](const SessionEventArgs &e)
         {
             recognitionEnd.Set();
-            button1->settext(L"开始");
+            if (!isend)
+                button1->settext(L"开始");
             isrunning = false;
         });
 };
